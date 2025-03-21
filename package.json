@@ -9,7 +9,10 @@
     "lint": "next lint",
     "tsc": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:reset": "./scripts/db-reset.sh",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",
