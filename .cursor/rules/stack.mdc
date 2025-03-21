@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+## 技術スタックの説明
+
+- Front-end: Next.js (App Router)
+- Back-end: Supabase + Next.js server actions
+- UI: shadch/ui + taillwind-css
+- type: TypeScript
+- package management: yarn
