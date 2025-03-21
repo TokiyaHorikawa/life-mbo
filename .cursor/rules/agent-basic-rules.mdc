@@ -16,7 +16,7 @@ alwaysApply: false
 
 ## 許可項目
 
-- 開発時に関するものは許可する(ex: yarn tsc, yarn add, yarn isntall, yarn dev, supabase start)
+- 開発時に関するコマンド実行は許可する(ex: yarn tsc, yarn add, yarn isntall, yarn dev, supabase start)
 - 破壊的な変更はコマンド実行時に確認して欲しい
 
 ## 自律的ドキュメント整理
@@ -28,3 +28,9 @@ alwaysApply: false
 - `./.cursor/rules/*` には、AIであるあなたのためのルールが記載されています
   - ルールを確認したい場合はここを確認してください
   - 追加の指示や、今後も知っておいた方が良いルールが有れば自分で記載してください
+
+- `./.cursor/memories/*`以下は、あなたが自由に利用していい記憶装置です
+  - why: AI AgentはContextが長くなると要約されて情報を失う作りになっている
+    - 一連のタスクで重要な情報は記載すること
+    - 依頼者である user に情報共有する意味でも価値がある
+  - 不要になったら user が削除するので、自由に書き殴ってください
