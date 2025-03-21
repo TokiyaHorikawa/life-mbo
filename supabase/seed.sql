@@ -43,12 +43,8 @@ $$;
 -- Insert the corresponding profile
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.users WHERE id = 'd0d4e39c-4f1a-4d2d-9390-fade78932c3b') THEN
-    INSERT INTO public.users (id, name)
-    VALUES (
-      'd0d4e39c-4f1a-4d2d-9390-fade78932c3b',
-      'Test User'
-    );
-  END IF;
+  UPDATE public.users
+  SET name = 'Test User'
+  WHERE id = 'd0d4e39c-4f1a-4d2d-9390-fade78932c3b';
 END
 $$;
