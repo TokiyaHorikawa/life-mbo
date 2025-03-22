@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignUpData, SignInData } from '@/types/auth';
 import { createServiceRoleClient, createServerSupabaseClient } from '../supabase/server';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 
 // サインアップ
 export async function signUp(data: SignUpData) {
@@ -38,7 +39,10 @@ export async function signUp(data: SignUpData) {
 
 // サインイン
 export async function signIn(data: SignInData) {
-  const supabase = createServerSupabaseClient();
+  const cookieStore = cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: () => cookieStore,
+  });
 
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: data.email,
@@ -47,6 +51,15 @@ export async function signIn(data: SignInData) {
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  // セッションの確認
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    return { success: false, error: "セッションの作成に失敗しました" };
   }
 
   return { success: true, user: authData?.user };

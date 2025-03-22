@@ -44,9 +44,8 @@ export function LoginForm() {
         return;
       }
 
-      // ログイン成功時にダッシュボードへリダイレクト
-      router.push("/dashboard");
-      router.refresh();
+      // 完全なページリロードを実行してセッション状態を確実に更新
+      window.location.href = "/dashboard";
     } catch (error) {
       setError("ログイン処理中にエラーが発生しました");
       console.error(error);
