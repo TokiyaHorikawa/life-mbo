@@ -1,25 +1,39 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-// サーバーコンポーネントでのクライアント作成
-export const createServerSupabaseClient = () => {
-  const cookieStore = cookies();
+export const createClient = () => {
+  const cookieStore = cookies()
 
-  return createServerComponentClient(
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: () => cookieStore,
-    },
-    {
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          try {
+            cookieStore.set(name, value, options)
+          } catch (error) {
+            // Handle cookies in edge functions
+          }
+        },
+        remove(name: string, options: any) {
+          try {
+            cookieStore.delete(name, options)
+          } catch (error) {
+            // Handle cookies in edge functions
+          }
+        },
+      },
     }
-  );
-};
+  )
+}
 
-// サーバーアクション用のサービスロールクライアント
+// サービスロール用のクライアント
 export const createServiceRoleClient = () => {
-  return createClient(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
@@ -27,6 +41,7 @@ export const createServiceRoleClient = () => {
         autoRefreshToken: false,
         persistSession: false,
       },
+      cookies: {}
     }
-  );
-};
+  )
+}
