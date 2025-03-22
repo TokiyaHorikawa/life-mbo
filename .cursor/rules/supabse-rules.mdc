@@ -1,0 +1,9 @@
+---
+description: supabseを用いる時に使うルール
+globs: 
+alwaysApply: false
+---
+## 基本
+
+- supabaseコマンドを用いて操作すること
+- migration file は supabase のコマンド経由で作成してから編集すること（ファイル名などが手動だと順番の衝突が起こる）

@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,18 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function Home() {
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Hello World!</CardTitle>
-          <CardDescription>Next.js + Supabase + shadcn/ui</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button className="w-full">Click me!</Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
+export default async function Home() {
+  const session = await getSession();
+
+  // ログイン済みの場合はダッシュボードへ、未ログインの場合はログインページへ
+  if (session) {
+    redirect("/dashboard");
+  } else {
+    redirect("/login");
+  }
 }
