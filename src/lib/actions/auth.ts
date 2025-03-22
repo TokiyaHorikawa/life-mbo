@@ -1,14 +1,12 @@
 'use server'
 
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignUpData, SignInData } from '@/types/auth';
-import { createServiceRoleClient, createServerSupabaseClient } from '../supabase/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createServiceRoleClient, createClient } from '../supabase/server';
 
 // サインアップ
 export async function signUp(data: SignUpData) {
-  const supabase = createServerSupabaseClient();
+  const supabase = createClient();
 
   const { data: authData, error } = await supabase.auth.signUp({
     email: data.email,
@@ -39,10 +37,7 @@ export async function signUp(data: SignUpData) {
 
 // サインイン
 export async function signIn(data: SignInData) {
-  const cookieStore = cookies();
-  const supabase = createRouteHandlerClient({
-    cookies: () => cookieStore,
-  });
+  const supabase = createClient();
 
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: data.email,
@@ -53,34 +48,33 @@ export async function signIn(data: SignInData) {
     return { success: false, error: error.message };
   }
 
-  // セッションの確認
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    return { success: false, error: "セッションの作成に失敗しました" };
-  }
-
   return { success: true, user: authData?.user };
 }
 
 // サインアウト
 export async function signOut() {
-  const supabase = createServerSupabaseClient();
+  const supabase = createClient();
   await supabase.auth.signOut();
-  cookies().delete('supabase-auth-token');
   redirect('/login');
 }
 
 // 現在のセッション取得
 export async function getSession() {
-  const supabase = createServerSupabaseClient();
-  const { data, error } = await supabase.auth.getSession();
+  const supabase = createClient();
 
-  if (error || !data.session) {
+  // 安全な方法でユーザー情報のみを取得
+  const { data } = await supabase.auth.getUser();
+
+  // ユーザーがいない場合はnullを返す
+  if (!data.user) {
     return null;
   }
 
-  return data.session;
+  // セッションと同等の形式のオブジェクトを作成して返す
+  return {
+    user: data.user,
+    // その他のセッション関連の情報
+    expires_at: 0, // ダミー値
+    access_token: ''  // ダミー値
+  };
 }

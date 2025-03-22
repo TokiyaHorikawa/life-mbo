@@ -1,53 +1,32 @@
-import { type CookieOptions, createServerClient } from "@supabase/ssr";
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
-const createSupabaseClient = (
-  request: NextRequest,
-  response: NextResponse,
-) => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-  const cookieOptions: {
-    get(name: string): string | undefined;
-    set(name: string, value: string, options: CookieOptions): void;
-    remove(name: string, options: CookieOptions): void;
-  } = {
-    get(name: string) {
-      return request.cookies.get(name)?.value;
-    },
-    set(name: string, value: string, options: CookieOptions) {
-      response.cookies.set({ name, value, ...options });
-    },
-    remove(name: string, options: CookieOptions) {
-      response.cookies.delete({ name, ...options });
-    },
-  };
-
-  return createServerClient(supabaseUrl, supabaseKey, {
-    cookies: cookieOptions,
-  });
-};
-
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next({
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
     request: {
-      headers: req.headers,
+      headers: request.headers,
     },
-  });
+  })
 
-  const supabase = createSupabaseClient(req, res);
+  const supabase = createClient({
+    cookieStore: {
+      getAll: () => request.cookies.getAll(),
+      set: (name, value, options) => {
+        request.cookies.set(name, value)
+        response = NextResponse.next({
+          request,
+        })
+        response.cookies.set(name, value, options)
+      }
+    }
+  })
 
-  // セッションの更新を確実に行う
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  await supabase.auth.getUser()
 
-  return res;
+  return response
 }
 
 // すべてのルートでミドルウェアを実行（特定のパスを除外）
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
-};
+}
