@@ -61,6 +61,20 @@ export async function signOut() {
 // 現在のセッション取得
 export async function getSession() {
   const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  return session;
+
+  // 安全な方法でユーザー情報のみを取得
+  const { data } = await supabase.auth.getUser();
+
+  // ユーザーがいない場合はnullを返す
+  if (!data.user) {
+    return null;
+  }
+
+  // セッションと同等の形式のオブジェクトを作成して返す
+  return {
+    user: data.user,
+    // その他のセッション関連の情報
+    expires_at: 0, // ダミー値
+    access_token: ''  // ダミー値
+  };
 }

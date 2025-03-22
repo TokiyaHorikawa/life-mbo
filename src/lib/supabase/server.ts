@@ -1,31 +1,36 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { type ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
 
-export const createClient = () => {
-  const cookieStore = cookies()
+type CreateClientOptions = {
+  cookieStore?: {
+    getAll: () => Array<{ name: string; value: string }>
+    set?: (name: string, value: string, options?: Partial<ResponseCookie>) => void
+  }
+}
+
+// createClient関数 - 引数なしでの呼び出しと、cookieStoreを指定しての呼び出しの両方をサポート
+export const createClient = (options?: CreateClientOptions) => {
+  // 引数がない場合はデフォルトでcookies()を使用
+  const cookieStore = options?.cookieStore || cookies()
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+        getAll() {
+          return cookieStore.getAll()
         },
-        set(name: string, value: string, options: any) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set(name, value, options)
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set?.(name, value, options)
+            })
           } catch (error) {
             // Handle cookies in edge functions
           }
-        },
-        remove(name: string, options: any) {
-          try {
-            cookieStore.delete(name, options)
-          } catch (error) {
-            // Handle cookies in edge functions
-          }
-        },
+        }
       },
     }
   )
@@ -41,7 +46,14 @@ export const createServiceRoleClient = () => {
         autoRefreshToken: false,
         persistSession: false,
       },
-      cookies: {}
+      cookies: {
+        getAll() {
+          return []
+        },
+        setAll() {
+          // サービスロールでは何もしない
+        }
+      }
     }
   )
 }
